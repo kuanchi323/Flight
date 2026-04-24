@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlightLog Test</title>
+<style>
+body{background:#06090f;color:#f97316;font-family:sans-serif;padding:20px}
+button{background:#f97316;color:white;border:none;padding:15px 30px;font-size:18px;border-radius:10px;margin:10px;display:block;width:100%}
+#result{color:white;margin-top:20px;font-size:16px;padding:10px;background:rgba(255,255,255,0.1);border-radius:8px;min-height:50px}
+</style>
+</head>
+<body>
+<h2>✈ FlightLog 測試</h2>
+<button id="btn1">點我測試 JavaScript</button>
+<button id="btn2">點我測試 localStorage</button>
+<div id="result">等待點擊...</div>
+<script>
+document.getElementById('btn1').addEventListener('click', function() {
+  document.getElementById('result').textContent = '✅ JavaScript 正常運作！時間：' + new Date().toLocaleTimeString();
+});
+document.getElementById('btn2').addEventListener('click', function() {
+  try {
+    localStorage.setItem('test', '123');
+    var v = localStorage.getItem('test');
+    document.getElementById('result').textContent = '✅ localStorage 正常！值：' + v;
+  } catch(e) {
+    document.getElementById('result').textContent = '❌ localStorage 錯誤：' + e.message;
+  }
+});
+</script>
+</body>
+</html>
