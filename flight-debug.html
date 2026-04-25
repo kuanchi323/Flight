@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlightLog Debug</title>
+<style>
+body{background:#06090f;color:#dce4f0;font-family:sans-serif;padding:16px}
+#log{background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;font-family:monospace;white-space:pre-wrap;min-height:100px}
+.ok{color:#10b981}.err{color:#ef4444}.info{color:#f97316}
+button{background:#f97316;color:white;border:none;padding:12px 20px;font-size:15px;border-radius:8px;margin:6px;cursor:pointer;display:block;width:100%}
+</style>
+</head>
+<body>
+<h2 style="color:#f97316">FlightLog 錯誤偵測</h2>
+<button id="b1">① 測試基本 JS</button>
+<button id="b2">② 測試機場資料載入</button>
+<button id="b3">③ 測試地圖計算</button>
+<button id="b4">④ 測試 localStorage</button>
+<button id="b5">⑤ 載入完整 App 看錯誤</button>
+<div id="log">點上方按鈕開始測試...</div>
+
+<script>
+var log = document.getElementById('log');
+function write(msg, cls) {
+  log.innerHTML += '<span class="'+(cls||'')+'">' + msg + '</span>
+';
+}
+
+window.onerror = function(msg, src, line, col, err) {
+  write('❌ 全域錯誤: ' + msg + ' (行' + line + ')', 'err');
+  return true;
+};
+
+document.getElementById('b1').addEventListener('click', function() {
+  log.innerHTML = '';
+  write('① 基本 JS 測試...', 'info');
+  try {
+    var x = 1 + 1;
+    write('✅ 運算正常: 1+1=' + x, 'ok');
+    var arr = [1,2,3];
+    write('✅ 陣列正常: ' + arr.join(','), 'ok');
+    var obj = {a:1, b:'hello'};
+    write('✅ 物件正常: ' + JSON.stringify(obj), 'ok');
+    write('✅ 基本 JS 全部正常', 'ok');
+  } catch(e) { write('❌ 錯誤: ' + e.message, 'err'); }
+});
+
+document.getElementById('b2').addEventListener('click', function() {
+  log.innerHTML = '';
+  write('② 測試機場資料...', 'info');
+  try {
+    var AP = {TPE:{n:"桃園國際",c:"台北",la:25.0797,lo:121.2342}};
+    write('✅ 基本物件: ' + JSON.stringify(AP.TPE), 'ok');
+    
+    // Test with Chinese keys
+    var AP2 = {};
+    AP2['TPE'] = {n:"桃園", c:"台北", g:"🌏東亞", la:25.0797, lo:121.2342};
+    AP2['NRT'] = {n:"成田", c:"東京", g:"🌏東亞", la:35.7647, lo:140.3864};
+    var count = 0;
+    var k;
+    for(k in AP2) count++;
+    write('✅ 機場資料筆數: ' + count, 'ok');
+    write('✅ TPE: ' + AP2.TPE.c, 'ok');
+    
+    // Test AP_G grouping
+    var AP_G = {};
+    for(k in AP2){
+      var g = AP2[k].g;
+      if(!AP_G[g]) AP_G[g] = [];
+      AP_G[g].push(k);
+    }
+    write('✅ 分組正常: ' + JSON.stringify(AP_G), 'ok');
+  } catch(e) { write('❌ 錯誤: ' + e.message + ' stack: ' + (e.stack||''), 'err'); }
+});
+
+document.getElementById('b3').addEventListener('click', function() {
+  log.innerHTML = '';
+  write('③ 測試地圖計算...', 'info');
+  try {
+    function dist(la1,lo1,la2,lo2){
+      var R=Math.PI/180,Rk=6371;
+      var sa=Math.sin((la2-la1)*R/2),sb=Math.sin((lo2-lo1)*R/2);
+      var a=sa*sa+Math.cos(la1*R)*Math.cos(la2*R)*sb*sb;
+      return Math.round(Rk*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+    }
+    var d = dist(25.0797,121.2342,1.3644,103.9915);
+    write('✅ TPE→SIN 距離: ' + d + ' km', 'ok');
+    
+    function proj(lat,lng){
+      var W=700,H=350;
+      var x=((lng+180)/360)*W;
+      var y=(1-Math.log(Math.tan(lat*Math.PI/360+Math.PI/4))/Math.PI)/2*H;
+      return [x,Math.max(0,Math.min(H,y))];
+    }
+    var p = proj(25.0797, 121.2342);
+    write('✅ 投影計算: [' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ']', 'ok');
+  } catch(e) { write('❌ 錯誤: ' + e.message, 'err'); }
+});
+
+document.getElementById('b4').addEventListener('click', function() {
+  log.innerHTML = '';
+  write('④ 測試 localStorage...', 'info');
+  try {
+    localStorage.setItem('debug_test', JSON.stringify({ok:true,time:Date.now()}));
+    var v = JSON.parse(localStorage.getItem('debug_test'));
+    write('✅ 存取正常: ' + JSON.stringify(v), 'ok');
+    localStorage.removeItem('debug_test');
+  } catch(e) { write('❌ 錯誤: ' + e.message, 'err'); }
+});
+
+document.getElementById('b5').addEventListener('click', function() {
+  log.innerHTML = '';
+  write('⑤ 測試完整 App 初始化...', 'info');
+  
+  try {
+    write('載入機場資料...', 'info');
+    var AP = {TPE:{n:"桃園",c:"台北",g:"🌏東亞",la:25.0797,lo:121.2342},SIN:{n:"樟宜",c:"新加坡",g:"🌏東南亞",la:1.3644,lo:103.9915},NRT:{n:"成田",c:"東京",g:"🌏東亞",la:35.7647,lo:140.3864}};
+    write('✅ AP 載入: ' + Object.keys(AP).length + ' 個', 'ok');
+    
+    var AP_G = {};
+    var k;
+    for(k in AP){var g=AP[k].g;if(!AP_G[g])AP_G[g]=[];AP_G[g].push(k);}
+    write('✅ AP_G 分組完成', 'ok');
+    
+    write('載入行程資料...', 'info');
+    var trips = [];
+    try {
+      var r = localStorage.getItem('flv5');
+      if(r) trips = JSON.parse(r);
+    } catch(e2) { write('⚠️ localStorage 讀取失敗，使用預設', 'info'); }
+    if(!trips.length) trips = [{id:1,name:"測試行程",legs:[{from:"TPE",to:"SIN",fn:"BR255",al:"長榮"}],exp:[]}];
+    write('✅ trips: ' + trips.length + ' 筆', 'ok');
+    
+    write('渲染統計...', 'info');
+    var km=0,ci=[];
+    trips.forEach(function(t){
+      (t.legs||[]).forEach(function(l){
+        var a=AP[l.from],b=AP[l.to];
+        if(a&&ci.indexOf(a.c)<0) ci.push(a.c);
+        if(b&&ci.indexOf(b.c)<0) ci.push(b.c);
+      });
+    });
+    write('✅ 統計計算正常: ' + ci.length + ' 城市', 'ok');
+    
+    write('', '');
+    write('🎉 全部測試通過！問題可能在 DOM 操作或事件綁定', 'ok');
+    write('請截圖給 Claude 看這個結果', 'info');
+    
+  } catch(e) {
+    write('❌ 錯誤位置: ' + e.message, 'err');
+    write('Stack: ' + (e.stack||'無'), 'err');
+  }
+});
+</script>
+
+</body>
+</html>
