@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Touch Test</title>
+<style>
+body{background:#06090f;color:#fff;font-family:sans-serif;padding:20px;margin:0}
+.btn{background:#f97316;color:white;border:none;padding:20px;font-size:18px;border-radius:10px;margin:8px 0;display:block;width:100%;-webkit-appearance:none;cursor:pointer;touch-action:manipulation}
+#out{background:rgba(255,255,255,0.1);border-radius:8px;padding:14px;margin-top:14px;font-size:14px;min-height:60px;line-height:1.8}
+a.btn{display:block;text-align:center;text-decoration:none;padding:20px;background:#3b82f6;border-radius:10px;margin:8px 0;font-size:18px}
+</style>
+</head>
+<body>
+<h2 style="color:#f97316">觸控測試</h2>
+
+<button class="btn" id="b1">① 點我（click 事件）</button>
+<button class="btn" id="b2" style="background:#a855f7">② 點我（touchend 事件）</button>
+<a href="#" class="btn" id="b3">③ 點我（連結 href）</a>
+<button class="btn" id="b4" style="background:#10b981" ontouchstart="document.getElementById('out').innerHTML+='ontouchstart 有效!<br>'">④ 點我（ontouchstart inline）</button>
+
+<div id="out">等待點擊...</div>
+
+<script>
+var out = document.getElementById('out');
+
+document.getElementById('b1').addEventListener('click', function() {
+  out.innerHTML += '✅ click 事件有效！時間: ' + new Date().toLocaleTimeString() + '<br>';
+});
+
+document.getElementById('b2').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  out.innerHTML += '✅ touchend 事件有效！時間: ' + new Date().toLocaleTimeString() + '<br>';
+});
+
+document.getElementById('b3').addEventListener('click', function(e) {
+  e.preventDefault();
+  out.innerHTML += '✅ 連結 click 有效！時間: ' + new Date().toLocaleTimeString() + '<br>';
+});
+</script>
+
+</body>
+</html>
