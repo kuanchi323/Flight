@@ -3,47 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>FlightLog Pro</title>
+<title>FlightLog Pro v4 - Asia Full Support</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#07090e;--surface:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.1);
-  --text:#dce4f0;--muted:rgba(255,255,255,0.4);--accent:#f97316;
-  --accent2:#3b82f6;
+  --bg:#07090e;--surface:rgba(255,255,255,0.06);--border:rgba(255,255,255,0.12);
+  --text:#dce4f0;--muted:rgba(255,255,255,0.4);--accent:#f97316;--accent2:#3b82f6;
 }
 body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-#hdr{padding:calc(48px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+#hdr{padding:calc(44px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
 .brand{font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--accent);letter-spacing:4px;display:flex;align-items:center;gap:8px}
 .brand-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px var(--accent)}
-#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:100px}
+
+#content{flex:1;overflow-y:auto;padding-bottom:120px}
 
 /* MAP */
-#map-wrap{position:relative;margin:12px;border-radius:18px;overflow:hidden;border:1px solid var(--border);background:#0b1120}
+#map-wrap{position:relative;margin:12px;border-radius:18px;overflow:hidden;border:1px solid var(--border);background:#0b1120;height:240px}
 #world-map{width:100%;display:block;opacity:0.6}
 #arc-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
 
-/* CARDS & FORMS */
-.card{background:var(--surface);border-radius:18px;padding:20px;margin:12px;border:1px solid var(--border)}
-.field{margin-bottom:14px;position:relative}
-.field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;font-weight:700;letter-spacing:1px}
-input,select{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px;font-size:14px;width:100%;font-family:'Outfit',sans-serif}
+/* UI GRID FIX - 解決重疊 */
+.input-row{display:flex;gap:12px;margin-bottom:12px}
+.input-row .field:first-child{flex:1.2} /* 日期佔比較大 */
+.input-row .field:last-child{flex:0.8}  /* 班機號碼佔比較小 */
 
-/* 修正日期與班機重疊的 Grid */
-.input-row{display:grid;grid-template-columns:1.2fr 0.8fr;gap:10px;margin-bottom:10px}
+.field{position:relative;min-width:0}
+.field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;font-weight:700;letter-spacing:1px}
+input,select{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:14px;font-size:15px;width:100%;font-family:'Outfit',sans-serif;outline:none}
+input:focus{border-color:var(--accent)}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin:0 12px 16px}
+.tab-btn{flex:1;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-weight:700}
+.tab-btn.active{background:rgba(249,115,22,0.15);border-color:var(--accent);color:var(--accent)}
+
+/* CARDS */
+.card{background:var(--surface);border-radius:20px;padding:20px;margin:12px;border:1px solid var(--border);box-shadow:0 10px 20px rgba(0,0,0,0.2)}
+.leg-item{background:rgba(0,0,0,0.2);padding:12px;border-radius:12px;margin-top:8px;font-size:13px}
+.expense-tag{color:var(--accent);font-weight:600;font-size:12px;margin-top:10px;display:block}
 
 /* DROPDOWN */
-.apt-dropdown, .finder-box{position:absolute;top:100%;left:0;right:0;background:#131825;border:1px solid var(--accent);border-radius:12px;z-index:1000;max-height:150px;overflow-y:auto;display:none}
-.apt-item, .finder-item{padding:10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px}
+.dropdown{position:absolute;top:100%;left:0;right:0;background:#1a202c;border:1px solid var(--accent);border-radius:12px;z-index:1000;max-height:180px;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.drop-item{padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:13px}
 
 /* NAV */
-#nav{display:flex;border-top:1px solid var(--border);background:rgba(7,9,14,0.9);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);position:fixed;bottom:0;width:100%}
-.ntab{flex:1;padding:12px 0;border:none;background:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px}
+#nav{display:flex;border-top:1px solid var(--border);background:rgba(7,9,14,0.95);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);position:fixed;bottom:0;width:100%}
+.ntab{flex:1;padding:14px 0;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}
 .ntab.active{color:var(--accent)}
 .btn{background:var(--accent);color:white;border:none;border-radius:12px;padding:16px;font-size:16px;width:100%;font-weight:700;margin-top:10px}
-.page{display:none}
-.page.active{display:block}
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--accent);color:white;padding:10px 20px;border-radius:20px;font-size:14px;opacity:0;transition:0.3s;z-index:2000}
 </style>
 </head>
 <body>
@@ -51,170 +59,196 @@ input,select{background:rgba(255,255,255,0.07);border:1px solid var(--border);bo
 <div id="hdr"><div class="brand"><span class="brand-dot"></span>✈ FLIGHT LOG PRO</div></div>
 
 <div id="content">
-  <div class="page active" id="pg-map">
-    <div id="map-wrap">
-      <canvas id="world-map"></canvas>
-      <canvas id="arc-layer"></canvas>
-    </div>
+  <div id="pg-map" class="page">
+    <div id="map-wrap"><canvas id="world-map"></canvas><canvas id="arc-layer"></canvas></div>
     <div id="trips-list"></div>
   </div>
 
-  <div class="page" id="pg-add">
-    <div class="card">
-      <div class="field"><label>行程名稱</label><input type="text" id="i-name" placeholder="例：首爾之旅"></div>
-      
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-        <span style="font-size:14px; font-weight:600">開啟來回模式</span>
-        <input type="checkbox" id="i-rt" style="width:22px;height:22px" onchange="toggleRT()">
-      </div>
+  <div id="pg-add" class="page" style="display:none">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="setAddMode('f')">✈ 航班</button>
+      <button class="tab-btn" onclick="setAddMode('e')">💰 開支</button>
+    </div>
 
-      <div style="border-left:3px solid var(--accent); padding-left:12px; margin-bottom:25px">
-        <label style="font-size:11px; color:var(--accent); font-weight:800">DEPARTURE 去程</label>
-        <div class="input-row" style="margin-top:10px">
-          <div class="field"><label>出發地</label><input type="text" id="i-f1" placeholder="KHH" oninput="searchApt(this,'d-f1')"><div id="d-f1" class="apt-dropdown"></div></div>
-          <div class="field"><label>目的地</label><input type="text" id="i-t1" placeholder="ICN" oninput="searchApt(this,'d-t1')" onblur="autoFillRT()"><div id="d-t1" class="apt-dropdown"></div></div>
+    <div id="form-f" class="card">
+      <div class="field"><label>行程名稱</label><input type="text" id="i-name" placeholder="例：首爾釜山購物行"></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="font-size:14px">開啟來回模式</span><input type="checkbox" id="i-rt" style="width:20px" onchange="toggleRT()"></div>
+
+      <div style="border-left:3px solid var(--accent);padding-left:12px;margin-bottom:20px">
+        <div class="input-row">
+          <div class="field"><label>去程出發</label><input type="text" id="i-f1" placeholder="KHH" oninput="searchApt(this,'d-f1')"><div id="d-f1" class="dropdown"></div></div>
+          <div class="field"><label>去程目的地</label><input type="text" id="i-t1" placeholder="ICN" oninput="searchApt(this,'d-t1')"><div id="d-t1" class="dropdown"></div></div>
         </div>
         <div class="input-row">
-          <div class="field"><label>日期</label><input type="date" id="i-d1"></div>
-          <div class="field"><label>班機號碼</label><input type="text" id="i-n1" placeholder="搜尋時間" oninput="findF(this.value, 'f-l1', 'i-n1')"><div id="f-l1" class="finder-box"></div></div>
+          <div class="field"><label>去程日期</label><input type="date" id="i-d1"></div>
+          <div class="field"><label>去程班機</label><input type="text" id="i-n1" placeholder="輸入時間" oninput="findF(this.value,'f-l1','i-n1')"><div id="f-l1" class="dropdown"></div></div>
         </div>
       </div>
 
-      <div id="rt-section" style="display:none; border-left:3px solid var(--accent2); padding-left:12px">
-        <label style="font-size:11px; color:var(--accent2); font-weight:800">RETURN 回程</label>
-        <div class="input-row" style="margin-top:10px">
-          <div class="field"><label>出發地</label><input type="text" id="i-f2" placeholder="GMP" oninput="searchApt(this,'d-f2')"><div id="d-f2" class="apt-dropdown"></div></div>
-          <div class="field"><label>目的地</label><input type="text" id="i-t2" placeholder="KHH" oninput="searchApt(this,'d-t2')"><div id="d-t2" class="apt-dropdown"></div></div>
+      <div id="rt-box" style="display:none;border-left:3px solid var(--accent2);padding-left:12px">
+        <div class="input-row">
+          <div class="field"><label>回程出發</label><input type="text" id="i-f2" oninput="searchApt(this,'d-f2')"><div id="d-f2" class="dropdown"></div></div>
+          <div class="field"><label>回程目的地</label><input type="text" id="i-t2" oninput="searchApt(this,'d-t2')"><div id="d-t2" class="dropdown"></div></div>
         </div>
         <div class="input-row">
-          <div class="field"><label>日期</label><input type="date" id="i-d2"></div>
-          <div class="field"><label>班機號碼</label><input type="text" id="i-n2" placeholder="搜尋時間" oninput="findF(this.value, 'f-l2', 'i-n2')"><div id="f-l2" class="finder-box"></div></div>
+          <div class="field"><label>回程日期</label><input type="date" id="i-d2"></div>
+          <div class="field"><label>回程班機</label><input type="text" id="i-n2" placeholder="輸入時間" oninput="findF(this.value,'f-l2','i-n2')"><div id="f-l2" class="dropdown"></div></div>
         </div>
       </div>
-
       <button class="btn" onclick="saveTrip()">儲存行程 ✈</button>
+    </div>
+
+    <div id="form-e" class="card" style="display:none">
+      <div class="field"><label>關聯行程</label><select id="e-trip"></select></div>
+      <div class="input-row">
+        <div class="field"><label>金額</label><input type="number" id="e-amt" placeholder="0"></div>
+        <div class="field"><label>幣別</label><select id="e-cur"><option>TWD</option><option>JPY</option><option>KRW</option><option>THB</option></select></div>
+      </div>
+      <div class="field"><label>項目名稱</label><input type="text" id="e-desc" placeholder="例：機票、晚餐"></div>
+      <button class="btn" style="background:var(--accent2)" onclick="saveExp()">儲存開支 💰</button>
     </div>
   </div>
 </div>
 
 <div id="nav">
-  <button class="ntab active" onclick="switchTab('map',event)"><span>🗺️</span><span>地圖</span></button>
-  <button class="ntab" onclick="switchTab('add',event)"><span>＋</span><span>新增</span></button>
+  <button class="ntab active" id="n-map" onclick="showPg('map')"><span>🗺️</span>地圖</button>
+  <button class="ntab" id="n-add" onclick="showPg('add')"><span>＋</span>新增</button>
 </div>
-<div id="toast"></div>
 
 <script>
+// 擴充全亞洲主要機場
 const AIRPORTS = [
-  {code:"KHH",city:"高雄",lat:22.577,lng:120.349},
-  {code:"TPE",city:"台北",lat:25.077,lng:121.232},
-  {code:"ICN",city:"首爾(ICN)",lat:37.469,lng:126.450},
-  {code:"GMP",city:"首爾(GMP)",lat:37.558,lng:126.790},
-  {code:"BKK",city:"曼谷",lat:13.690,lng:100.750},
-  {code:"MFM",city:"澳門",lat:22.149,lng:113.591}
+  {code:"KHH",city:"高雄",lat:22.57,lng:120.34}, {code:"TPE",city:"桃園",lat:25.07,lng:121.23},
+  {code:"ICN",city:"仁川",lat:37.46,lng:126.45}, {code:"GMP",city:"金浦",lat:37.55,lng:126.79},
+  {code:"NRT",city:"成田",lat:35.77,lng:140.39}, {code:"HND",city:"羽田",lat:35.54,lng:139.77},
+  {code:"KIX",city:"關西",lat:34.43,lng:135.24}, {code:"FUK",city:"福岡",lat:33.58,lng:130.45},
+  {code:"BKK",city:"曼谷蘇凡",lat:13.69,lng:100.75}, {code:"DMK",city:"廊曼",lat:13.91,lng:100.60},
+  {code:"SIN",city:"新加坡",lat:1.36,lng:103.99}, {code:"HKG",city:"香港",lat:22.30,lng:113.91},
+  {code:"MFM",city:"澳門",lat:22.14,lng:113.59}, {code:"KUL",city:"吉隆坡",lat:2.74,lng:101.70},
+  {code:"SGN",city:"胡志明",lat:10.81,lng:106.66}, {code:"DAD",city:"峴港",lat:16.04,lng:108.19},
+  {code:"MNL",city:"馬尼拉",lat:14.50,lng:121.01}
 ];
 
-let trips = JSON.parse(localStorage.getItem('fl_pro_v3') || '[]');
+let trips = JSON.parse(localStorage.getItem('flight_pro_v4_data') || '[]');
 
-function toggleRT() { document.getElementById('rt-section').style.display = document.getElementById('i-rt').checked ? 'block' : 'none'; }
-
-function autoFillRT() {
-  const f1 = document.getElementById('i-f1').value, t1 = document.getElementById('i-t1').value;
-  if(f1 && !document.getElementById('i-t2').value) document.getElementById('i-t2').value = f1;
-  if(t1 && !document.getElementById('i-f2').value) document.getElementById('i-f2').value = t1;
+function showPg(p) {
+  document.querySelectorAll('.page').forEach(el=>el.style.display='none');
+  document.getElementById('pg-'+p).style.display='block';
+  document.querySelectorAll('.ntab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('n-'+p).classList.add('active');
+  if(p==='map') renderAll();
+  if(p==='add') updateExpList();
 }
 
-function switchTab(t, e) {
-  document.querySelectorAll('.page, .ntab').forEach(el => el.classList.remove('active'));
-  document.getElementById('pg-'+t).classList.add('active');
-  if(e) e.currentTarget.classList.add('active');
-  if(t === 'map') { renderMap(); renderList(); }
+function setAddMode(m) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('form-f').style.display = m==='f'?'block':'none';
+  document.getElementById('form-e').style.display = m==='e'?'block':'none';
 }
 
-function searchApt(input, dropId) {
-  const q = input.value.toUpperCase(), drop = document.getElementById(dropId);
-  if(!q) { drop.style.display = 'none'; return; }
-  const res = AIRPORTS.filter(a => a.code.includes(q) || a.city.includes(q));
-  drop.innerHTML = res.map(a => `<div class="apt-item" onclick="selApt('${input.id}','${a.code}','${a.city}','${dropId}')"><span>${a.city}</span><strong>${a.code}</strong></div>`).join('');
-  drop.style.display = res.length ? 'block' : 'none';
+function toggleRT() {
+  const isRT = document.getElementById('i-rt').checked;
+  document.getElementById('rt-box').style.display = isRT?'block':'none';
+  if(isRT) {
+    document.getElementById('i-f2').value = document.getElementById('i-t1').value;
+    document.getElementById('i-t2').value = document.getElementById('i-f1').value;
+  }
 }
 
-function selApt(id, code, city, dropId) {
+function searchApt(inp, dId) {
+  const q = inp.value.toUpperCase(), d = document.getElementById(dId);
+  if(!q){d.style.display='none'; return;}
+  const res = AIRPORTS.filter(a=>a.code.includes(q)||a.city.includes(q));
+  d.innerHTML = res.map(a=>`<div class="drop-item" onclick="selApt('${inp.id}','${a.code}','${dId}')"><span>${a.city}</span><strong>${a.code}</strong></div>`).join('');
+  d.style.display = res.length?'block':'none';
+}
+
+function selApt(id, code, dId) {
   document.getElementById(id).value = code;
-  document.getElementById(dropId).style.display = 'none';
-  autoFillRT();
+  document.getElementById(dId).style.display='none';
+  if(id==='i-t1') toggleRT();
 }
 
-function findF(val, listId, inputId) {
-  const box = document.getElementById(listId);
-  if(val.length >= 2 && !isNaN(val)) {
-    box.style.display = 'block';
-    box.innerHTML = `<div class="finder-item" onclick="applyF('${inputId}','CI${val}01','${listId}')"><span>建議班機 ${val}:15</span><span>CI${val}01</span></div>
-                     <div class="finder-item" onclick="applyF('${inputId}','BR${val}05','${listId}')"><span>建議班機 ${val}:45</span><span>BR${val}05</span></div>`;
-  } else { box.style.display = 'none'; }
+function findF(v, dId, iId) {
+  const d = document.getElementById(dId);
+  if(v.length >= 2 && !isNaN(v)) {
+    d.style.display='block';
+    d.innerHTML = `<div class="drop-item" onclick="applyF('${iId}','CI${v}01','${dId}')"><span>建議 CI${v}01</span><span>${v}:15</span></div>
+                   <div class="drop-item" onclick="applyF('${iId}','BR${v}05','${dId}')"><span>建議 BR${v}05</span><span>${v}:45</span></div>`;
+  } else d.style.display='none';
 }
-function applyF(id, val, boxId) { document.getElementById(id).value = val; document.getElementById(boxId).style.display = 'none'; }
+function applyF(id,v,dId){document.getElementById(id).value=v; document.getElementById(dId).style.display='none';}
 
 function saveTrip() {
   const name = document.getElementById('i-name').value;
-  if(!name) { showToast('⚠️ 請輸入行程名稱'); return; }
-  let newTrip = { name, legs: [] };
-  newTrip.legs.push({ fC: document.getElementById('i-f1').value, tC: document.getElementById('i-t1').value, date: document.getElementById('i-d1').value, fn: document.getElementById('i-n1').value });
+  if(!name) return;
+  let trip = { name, legs: [], exps: [] };
+  trip.legs.push({ f:document.getElementById('i-f1').value, t:document.getElementById('i-t1').value, d:document.getElementById('i-d1').value, n:document.getElementById('i-n1').value });
   if(document.getElementById('i-rt').checked) {
-    newTrip.legs.push({ fC: document.getElementById('i-f2').value, tC: document.getElementById('i-t2').value, date: document.getElementById('i-d2').value, fn: document.getElementById('i-n2').value });
+    trip.legs.push({ f:document.getElementById('i-f2').value, t:document.getElementById('i-t2').value, d:document.getElementById('i-d2').value, n:document.getElementById('i-n2').value });
   }
-  trips.unshift(newTrip);
-  localStorage.setItem('fl_pro_v3', JSON.stringify(trips));
-  showToast('✈ 行程已儲存');
-  switchTab('map');
+  trips.unshift(trip);
+  localStorage.setItem('flight_pro_v4_data', JSON.stringify(trips));
+  showPg('map');
 }
 
-function renderMap() {
+function updateExpList() {
+  const s = document.getElementById('e-trip');
+  s.innerHTML = trips.map((t,i)=>`<option value="${i}">${t.name}</option>`).join('');
+}
+
+function saveExp() {
+  const i = document.getElementById('e-trip').value;
+  const amt = document.getElementById('e-amt').value;
+  if(!amt) return;
+  trips[i].exps.push({ amt, cur:document.getElementById('e-cur').value, desc:document.getElementById('e-desc').value });
+  localStorage.setItem('flight_pro_v4_data', JSON.stringify(trips));
+  alert('開支已儲存');
+}
+
+function renderAll() {
   const cvs = document.getElementById('world-map'), acvs = document.getElementById('arc-layer');
   const ctx = cvs.getContext('2d'), actx = acvs.getContext('2d');
-  const w = cvs.width = acvs.width = document.getElementById('map-wrap').clientWidth, h = 220;
+  const w = cvs.width = acvs.width = document.getElementById('map-wrap').clientWidth, h = 240;
   cvs.height = acvs.height = h;
 
-  // 1. 繪製強化版背景地圖
-  ctx.fillStyle = '#0b1120'; ctx.fillRect(0,0,w,h);
-  ctx.fillStyle = 'rgba(255,255,255,0.15)'; // 提高大洲對比度
-  const continents = [
-    [[50,-140],[70,-140],[70,-55],[30,-55]], // 北美
-    [[10,40],[75,40],[75,140],[10,100]] // 亞洲簡圖
-  ];
-  continents.forEach(pts => {
-    ctx.beginPath();
-    pts.forEach((p,i) => {
-      const x = (p[1]+180)*(w/360), y = (90-p[0])*(h/180);
-      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    });
-    ctx.fill();
+  // 繪製地圖底圖
+  ctx.fillStyle='#0b1120'; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,0.12)';
+  const asiaPts = [[20,100],[50,100],[50,145],[10,145],[10,100]];
+  ctx.beginPath();
+  asiaPts.forEach((p,i)=>{
+    const x=(p[1]+180)*(w/360), y=(90-p[0])*(h/180);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
   });
+  ctx.fill();
 
-  // 2. 繪製航線
+  // 繪製航線
   actx.clearRect(0,0,w,h);
-  trips.forEach(t => {
+  trips.forEach((t, idx) => {
+    const col = idx === 0 ? '#f97316' : '#3b82f6';
     t.legs.forEach(l => {
-      const f = AIRPORTS.find(a => a.code === l.fC), tt = AIRPORTS.find(a => a.code === l.tC);
+      const f = AIRPORTS.find(a=>a.code===l.f), tt = AIRPORTS.find(a=>a.code===l.t);
       if(!f || !tt) return;
-      const x1 = (f.lng+180)*(w/360), y1 = (90-f.lat)*(h/180), x2 = (tt.lng+180)*(w/360), y2 = (90-tt.lat)*(h/180);
-      actx.beginPath(); actx.strokeStyle = '#f97316'; actx.lineWidth = 2;
+      const x1=(f.lng+180)*(w/360), y1=(90-f.lat)*(h/180), x2=(tt.lng+180)*(w/360), y2=(90-tt.lat)*(h/180);
+      actx.beginPath(); actx.strokeStyle=col; actx.lineWidth=2;
       actx.moveTo(x1,y1); actx.quadraticCurveTo((x1+x2)/2, Math.min(y1,y2)-30, x2,y2); actx.stroke();
-      actx.fillStyle = '#f97316'; [x1,x2].forEach((x,i)=> { actx.beginPath(); actx.arc(x, i===0?y1:y2, 4, 0, 7); actx.fill(); });
+      actx.fillStyle=col; [x1,x2].forEach((x,i)=>{ actx.beginPath(); actx.arc(x, i===0?y1:y2, 4, 0, 7); actx.fill(); });
     });
   });
-}
 
-function renderList() {
-  document.getElementById('trips-list').innerHTML = trips.map((t, i) => `
-    <div class="card" style="margin-top:0; margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><strong>${t.name}</strong><span onclick="del(${i})" style="font-size:12px;color:var(--muted)">刪除</span></div>
-      ${t.legs.map(l => `<div style="font-size:12px;margin-top:5px;background:rgba(0,0,0,0.2);padding:8px;border-radius:10px">✈ ${l.fC} → ${l.tC} <span style="float:right;color:var(--accent)">${l.fn}</span><br><small style="color:var(--muted)">${l.date}</small></div>`).join('')}
+  // 列表顯示
+  document.getElementById('trips-list').innerHTML = trips.map((t,i) => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between"><strong>${t.name}</strong><span onclick="del(${i})" style="color:var(--muted);font-size:12px">刪除</span></div>
+      ${t.legs.map(l=>`<div class="leg-item">✈ ${l.f} → ${l.t} <span style="float:right;color:var(--accent)">${l.n}</span><br><small>${l.d}</small></div>`).join('')}
+      <span class="expense-tag">💰 開支合計: ${t.exps.reduce((s,e)=>s+Number(e.amt),0)} (混合幣別)</span>
     </div>`).join('');
 }
 
-function del(i) { trips.splice(i,1); localStorage.setItem('fl_pro_v3', JSON.stringify(trips)); renderMap(); renderList(); }
-function showToast(m) { const t=document.getElementById('toast'); t.textContent=m; t.style.opacity=1; setTimeout(()=>t.style.opacity=0,2000); }
-window.onload = () => { setTimeout(renderMap, 300); renderList(); };
+function del(i){ if(confirm('確定刪除？')){trips.splice(i,1); localStorage.setItem('flight_pro_v4_data', JSON.stringify(trips)); renderAll();}}
+window.onload = renderAll;
 </script>
 </body>
 </html>
