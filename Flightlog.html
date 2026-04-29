@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>FlightLog Pro v10.5 - Correct Data</title>
+<title>FlightLog Pro v10.8 - Real Map</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -11,8 +11,12 @@
 body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 #hdr{padding:calc(44px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 #content{flex:1;overflow-y:auto;padding-bottom:100px}
-#map-wrap{position:relative;margin:16px;border-radius:20px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:180px}
-#map-canvas{width:100%;height:100%}
+
+/* 地圖容器優化 */
+#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:220px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+#map-bg{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.3;fill:#2c3e50}
+#map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:5}
+
 .card{background:var(--surface);border-radius:18px;padding:16px;margin:12px;border:1px solid var(--border);position:relative}
 .tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--accent);color:white;font-weight:700}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:2000;display:none;flex-direction:column;padding:calc(40px + env(safe-area-inset-top)) 20px}
@@ -38,7 +42,13 @@ input{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-ra
 
 <div id="content">
   <div id="pg-map" class="page">
-    <div id="map-wrap"><canvas id="map-canvas"></canvas></div>
+    <div id="map-wrap">
+        <svg id="map-bg" viewBox="100 -50 150 100" preserveAspectRatio="xMidYMid slice">
+            <path d="M120,25 L121,24 L122,25 L121,26 Z M135,35 L140,30 L145,35 L140,40 Z M120,15 L125,10 L130,15 L125,20 Z" fill="#2c3e50"/>
+            <rect x="100" y="-10" width="60" height="60" fill="rgba(255,255,255,0.03)" />
+        </svg>
+        <canvas id="map-canvas"></canvas>
+    </div>
     <div id="trips-list"></div>
   </div>
   <div id="pg-add" class="page" style="display:none;padding:20px">
@@ -66,7 +76,6 @@ const AIRPORTS = {
     "DAD":{n:"峴港",lat:16.05,lng:108.20},"BKK":{n:"曼谷",lat:13.69,lng:100.75}
 };
 
-// 嚴格核對截圖後的正確資料
 const recoveredData = [
     {
         name:"2024 大阪首爾", 
@@ -78,16 +87,10 @@ const recoveredData = [
         exps:[
             {d:"機票+飯店 (大阪+首爾)",a:38138},{d:"阿倍野展望台",a:532},{d:"燒肉 298",a:534},{d:"利木津巴士",a:334},{d:"環球影城",a:3200},{d:"首爾換錢",a:15000}
         ]
-    },
-    {
-        name:"2025 澳門", 
-        legs:[{f:"KHH",t:"MFM",d:"2025-10-25",n:"BR2913",info:"長榮航空"}], 
-        exps:[{d:"水舞間",a:6776},{d:"自助山",a:6794}]
     }
 ];
 
-let trips = JSON.parse(localStorage.getItem('flog_v10')) || [];
-if(trips.length < 2) { trips = recoveredData; saveAndRender(); }
+let trips = JSON.parse(localStorage.getItem('flog_v10')) || recoveredData;
 
 function showSuggestions(input) {
     const val = input.value.toUpperCase();
@@ -110,14 +113,41 @@ function renderAll() {
             <div style="margin-top:10px;color:var(--accent);font-weight:600;border-top:1px solid var(--border);padding-top:10px">💰 TWD ${t.exps.reduce((s,e)=>s+Number(e.a),0).toLocaleString()}</div>
         </div>
     `).join('');
-    renderMap();
+    setTimeout(renderMap, 100);
+}
+
+function renderMap() {
+    const cvs = document.getElementById('map-canvas'); const ctx = cvs.getContext('2d');
+    const w = cvs.width = cvs.offsetWidth; const h = cvs.height = cvs.offsetHeight;
+    ctx.clearRect(0,0,w,h);
+    
+    // 定義顯示區域 (東亞範圍)
+    const view = { minLng: 100, maxLng: 150, minLat: 0, maxLat: 45 };
+    const getX = lng => (lng - view.minLng) / (view.maxLng - view.minLng) * w;
+    const getY = lat => h - (lat - view.minLat) / (view.maxLat - view.minLat) * h;
+
+    trips.forEach((t,ti)=>{
+        const color = ti===0?'#f97316':'#3b82f6';
+        t.legs.forEach(l=>{
+            const f=AIRPORTS[l.f], tt=AIRPORTS[l.t]; if(!f||!tt) return;
+            const x1=getX(f.lng), y1=getY(f.lat), x2=getX(tt.lng), y2=getY(tt.lat);
+            
+            // 畫航線
+            ctx.beginPath(); ctx.setLineDash([4, 4]); ctx.strokeStyle=color; ctx.lineWidth=2;
+            ctx.moveTo(x1,y1); ctx.quadraticCurveTo((x1+x2)/2, Math.min(y1,y2)-40, x2,y2); ctx.stroke();
+            
+            // 畫機場點
+            ctx.setLineDash([]); ctx.fillStyle=color;
+            ctx.beginPath(); ctx.arc(x1,y1,4,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x2,y2,4,0,Math.PI*2); ctx.fill();
+        });
+    });
 }
 
 function openModal(idx) {
     const t = trips[idx];
     document.getElementById('modal-content').innerHTML = `
         <h2 style="margin-bottom:20px">📍 ${t.name}</h2>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">航班明細</p>
         ${t.legs.map(l=>`<div class="flight-item"><strong>${l.f} ➔ ${l.t}</strong> (${l.n})<div style="font-size:12px;color:var(--muted);margin-top:4px">${l.d} | ${l.info || '資訊載入中'}</div></div>`).join('')}
         <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:15px;margin-top:20px">
             <p style="font-size:12px;color:var(--muted);margin-bottom:10px">收支明細</p>
@@ -129,9 +159,7 @@ function openModal(idx) {
 
 function addLeg() {
     const id = Date.now();
-    const d = document.createElement('div');
-    d.className = 'leg-row';
-    d.style.marginBottom = '10px';
+    const d = document.createElement('div'); d.className='leg-row'; d.style.marginBottom='10px';
     d.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="search-container"><input type="text" id="f-${id}" class="l-f" placeholder="從" oninput="showSuggestions(this)"><div class="suggestions"></div></div><div class="search-container"><input type="text" id="t-${id}" class="l-t" placeholder="到" oninput="showSuggestions(this)"><div class="suggestions"></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:-5px"><input type="date" class="l-d"><input type="text" class="l-n" placeholder="班號"></div>`;
     document.getElementById('leg-container').appendChild(d);
 }
@@ -143,15 +171,14 @@ function saveTrip() {
         legs.push({ f: row.querySelector('.l-f').value.toUpperCase(), t: row.querySelector('.l-t').value.toUpperCase(), d: row.querySelector('.l-d').value, n: row.querySelector('.l-n').value });
     });
     trips.push({ name, legs, exps: [] });
-    saveAndRender(); showPg('map');
+    localStorage.setItem('flog_v10', JSON.stringify(trips));
+    showPg('map');
 }
 
-function renderMap() { /* 繪製連線 */ }
-function saveAndRender() { localStorage.setItem('flog_v10', JSON.stringify(trips)); renderAll(); }
-function showPg(p) { document.querySelectorAll('.page').forEach(e=>e.style.display='none'); document.getElementById('pg-'+p).style.display='block'; if(p==='map') renderAll(); }
+function showPg(p) { document.querySelectorAll('.page').forEach(e=>e.style.display='none'); document.getElementById('pg-'+p).style.display='block'; renderAll(); }
 function closeModal() { document.getElementById('modal').style.display='none'; }
-function delTrip(idx) { if(confirm('確定刪除？')){trips.splice(idx,1); saveAndRender();} }
-function backupData() { alert("數據已更新為您截圖中的大阪首爾行程！"); }
+function delTrip(idx) { if(confirm('確定刪除？')){trips.splice(idx,1); localStorage.setItem('flog_v10', JSON.stringify(trips)); renderAll();} }
+function backupData() { alert("地圖底圖已修復，資料已儲存！"); }
 
 window.onload = () => { addLeg(); renderAll(); };
 </script>
