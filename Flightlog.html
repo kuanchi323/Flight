@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>FlightLog Pro v11.0 - Full Restore</title>
+<title>FlightLog Pro v12.0 - Final Map Fix</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -12,9 +12,9 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;heig
 #hdr{padding:calc(44px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 #content{flex:1;overflow-y:auto;padding-bottom:100px}
 
-/* 問題 1: 地圖背景修復 */
-#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:200px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-#map-img{width:100%;height:100%;object-fit:cover;opacity:0.6}
+/* 地圖容器 - 使用 SVG 陸地確保顯示 */
+#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:220px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+#map-svg{position:absolute;top:0;left:0;width:100%;height:100%;fill:#24292e;opacity:0.8}
 #map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:5}
 
 .card{background:var(--surface);border-radius:18px;padding:16px;margin:12px;border:1px solid var(--border);position:relative}
@@ -22,7 +22,6 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;heig
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:2000;display:none;flex-direction:column;padding:calc(40px + env(safe-area-inset-top)) 20px}
 .modal-content{flex:1;overflow-y:auto}
 
-/* 問題 4: 輸入框佈局優化 (不重疊) */
 .search-container{position:relative;width:100%}
 input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:12px;color:white;padding:14px;width:100%;margin-bottom:10px;outline:none;font-size:15px}
 .suggestions{position:absolute;top:50px;left:0;width:100%;background:#1c2128;border-radius:12px;z-index:100;display:none;max-height:180px;overflow-y:auto;border:1px solid var(--accent2)}
@@ -40,20 +39,20 @@ input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-ra
 
 <div id="hdr">
     <div style="color:var(--accent);font-weight:700;letter-spacing:2px">● FLIGHT LOG PRO</div>
-    <div style="font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:20px">已同步</div>
+    <div style="font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:20px">Map Restore</div>
 </div>
 
 <div id="content">
   <div id="pg-map" class="page">
     <div id="map-wrap">
-        <img id="map-img" src="https://maps.googleapis.com/maps/api/staticmap?center=25,121&zoom=3&size=600x300&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:geometry|color:0x212121&style=feature:water|color:0x000000&key=" alt="地圖背景">
+        <svg id="map-svg" viewBox="0 0 800 400">
+            <path d="M120,80 L140,75 L160,85 L180,70 L220,90 L250,110 L240,150 L200,180 L150,170 L110,130 Z" opacity="0.3"/> <path d="M450,100 L500,80 L550,90 L600,70 L650,85 L700,120 L680,180 L620,220 L550,230 L500,200 L450,150 Z" opacity="0.5"/> <circle cx="560" cy="130" r="40" fill="rgba(255,255,255,0.05)" /> </svg>
         <canvas id="map-canvas"></canvas>
     </div>
     <div id="trips-list"></div>
   </div>
   
   <div id="pg-add" class="page" style="display:none;padding:20px">
-    <h3 style="margin-bottom:15px">新增/修改行程</h3>
     <input type="text" id="i-name" placeholder="行程名稱 (例如: 2024 大阪首爾)">
     <div id="leg-container"></div>
     <button onclick="addLeg()" style="width:100%;padding:12px;margin-bottom:15px;background:none;border:1px dashed var(--muted);color:var(--muted);border-radius:12px">＋ 新增航段</button>
@@ -67,7 +66,7 @@ input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-ra
 </div>
 
 <div id="nav">
-  <button class="ntab active" id="btn-map" onclick="showPg('map')">🗺️ 行程</button>
+  <button class="ntab active" id="btn-map" onclick="showPg('map')">🗺️ 地圖</button>
   <button class="ntab" id="btn-add" onclick="showPg('add')">＋ 新增</button>
 </div>
 
@@ -78,7 +77,6 @@ const AIRPORTS = {
     "DAD":{n:"峴港",lat:16.05,lng:108.20},"BKK":{n:"曼谷",lat:13.69,lng:100.75}
 };
 
-// 問題 3: 確保原始資料不丟失
 const recoveredData = [
     {
         name:"2024 大阪首爾", 
@@ -88,36 +86,21 @@ const recoveredData = [
             {f:"ICN",t:"KHH",d:"2025-01-03",n:"BR171",info:"20:45-23:10"}
         ], 
         exps:[
-            {d:"機票+飯店 (大阪+首爾)",a:38138},{d:"阿倍野展望台",a:532},{d:"燒肉 298",a:534},{d:"利木津巴士",a:334}
+            {d:"機票+飯店",a:38138},{d:"阿倍野展望台",a:532},{d:"燒肉 298",a:534},{d:"利木津巴士",a:334}
         ]
     }
 ];
 
-let trips = JSON.parse(localStorage.getItem('flog_v11')) || recoveredData;
+let trips = JSON.parse(localStorage.getItem('flog_v12')) || recoveredData;
 let editingIdx = -1;
-
-function showSuggestions(input) {
-    const val = input.value.toUpperCase();
-    const sugBox = input.nextElementSibling;
-    if(!val) { sugBox.style.display='none'; return; }
-    const matches = Object.keys(AIRPORTS).filter(k => k.includes(val) || AIRPORTS[k].n.includes(val));
-    sugBox.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSug('${input.id}', '${m}')"><strong>${m}</strong> - ${AIRPORTS[m].n}</div>`).join('');
-    sugBox.style.display = matches.length ? 'block' : 'none';
-}
-
-function selectSug(id, code) { document.getElementById(id).value = code; document.getElementById(id).nextElementSibling.style.display='none'; }
 
 function renderAll() {
     trips.sort((a,b) => new Date(b.legs[0].d) - new Date(a.legs[0].d));
     document.getElementById('trips-list').innerHTML = trips.map((t, idx) => `
         <div class="card">
-            <div style="display:flex;justify-content:space-between">
-                <span class="tag">TRIP</span>
-                <div>
-                    <span onclick="editTrip(${idx})" style="color:var(--accent2);font-size:12px;margin-right:15px">修改</span>
-                    <span onclick="delTrip(${idx})" style="color:var(--muted);font-size:12px">刪除</span>
-                </div>
-            </div>
+            <div style="display:flex;justify-content:space-between"><span class="tag">TRIP</span>
+            <div><span onclick="editTrip(${idx})" style="color:var(--accent2);font-size:12px;margin-right:15px">修改</span>
+            <span onclick="delTrip(${idx})" style="color:var(--muted);font-size:12px">刪除</span></div></div>
             <div onclick="openModal(${idx})">
                 <h3 style="margin:10px 0">📍 ${t.name}</h3>
                 ${t.legs.map(l=>`<div style="font-size:12px;color:var(--muted)">✈ ${l.f} → ${l.t} <span style="float:right">${l.n}</span></div>`).join('')}
@@ -125,22 +108,21 @@ function renderAll() {
             </div>
         </div>
     `).join('');
-    setTimeout(renderMap, 100);
+    setTimeout(renderMap, 150);
 }
 
-// 問題 2: 收支輸入與修改功能
 function openModal(idx) {
     const t = trips[idx];
     document.getElementById('modal-content').innerHTML = `
         <h2 style="margin-bottom:20px">📍 ${t.name}</h2>
-        ${t.legs.map(l=>`<div class="flight-item"><strong>${l.f} ➔ ${l.t}</strong> (${l.n})<div style="font-size:12px;color:var(--muted);margin-top:4px">${l.d} | ${l.info || ''}</div></div>`).join('')}
+        ${t.legs.map(l=>`<div class="flight-item"><strong>${l.f} ➔ ${l.t}</strong> (${l.n})<div style="font-size:12px;color:var(--muted);margin-top:4px">${l.d}</div></div>`).join('')}
         <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:15px;margin-top:20px">
             <p style="font-size:12px;color:var(--muted);margin-bottom:10px">收支明細</p>
             <div id="exp-list">${t.exps.map((e,ei)=>`<div class="exp-item"><span>${e.d}</span><span><strong>$${Number(e.a).toLocaleString()}</strong> <span onclick="delExp(${idx},${ei})" style="margin-left:10px;color:var(--muted)">✕</span></span></div>`).join('')}</div>
-            <div style="margin-top:15px">
-                <input type="text" id="new-exp-d" placeholder="項目 (如: 晚餐)">
-                <input type="number" id="new-exp-a" placeholder="金額">
-                <button class="btn-orange" style="background:var(--accent2);padding:10px" onclick="addExp(${idx})">新增支出</button>
+            <div style="margin-top:15px;display:grid;gap:10px">
+                <input type="text" id="new-exp-d" placeholder="項目" style="margin-bottom:0">
+                <input type="number" id="new-exp-a" placeholder="金額" style="margin-bottom:0">
+                <button class="btn-orange" style="background:var(--accent2);padding:10px;margin-top:0" onclick="addExp(${idx})">新增支出</button>
             </div>
         </div>
     `;
@@ -157,70 +139,58 @@ function addExp(idx) {
 
 function delExp(tIdx, eIdx) { trips[tIdx].exps.splice(eIdx,1); saveAndRender(); openModal(tIdx); }
 
-// 問題 4: 新增行程的佈局排版 (解決重疊)
 function addLeg(data = {f:'', t:'', d:'', n:''}) {
     const id = Date.now() + Math.random();
-    const d = document.createElement('div'); d.className='leg-row'; d.style.marginBottom='20px'; d.style.borderBottom='1px solid var(--border)'; d.style.paddingBottom='10px';
+    const d = document.createElement('div'); d.className='leg-row'; d.style.marginBottom='20px'; d.style.paddingBottom='10px'; d.style.borderBottom='1px solid var(--border)';
     d.innerHTML = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="search-container"><input type="text" id="f-${id}" class="l-f" placeholder="從" value="${data.f}" oninput="showSuggestions(this)"><div class="suggestions"></div></div>
             <div class="search-container"><input type="text" id="t-${id}" class="l-t" placeholder="到" value="${data.t}" oninput="showSuggestions(this)"><div class="suggestions"></div></div>
         </div>
         <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:10px;margin-top:5px">
-            <div style="display:flex;flex-direction:column"><label style="font-size:10px;color:var(--muted)">日期</label><input type="date" class="l-d" value="${data.d}"></div>
-            <div style="display:flex;flex-direction:column"><label style="font-size:10px;color:var(--muted)">班號</label><input type="text" class="l-n" placeholder="班號" value="${data.n}"></div>
+            <div><label style="font-size:10px;color:var(--muted)">日期</label><input type="date" class="l-d" value="${data.d}"></div>
+            <div><label style="font-size:10px;color:var(--muted)">班號</label><input type="text" class="l-n" placeholder="班號" value="${data.n}"></div>
         </div>
     `;
     document.getElementById('leg-container').appendChild(d);
-}
-
-function editTrip(idx) {
-    editingIdx = idx;
-    const t = trips[idx];
-    document.getElementById('i-name').value = t.name;
-    document.getElementById('leg-container').innerHTML = '';
-    t.legs.forEach(l => addLeg(l));
-    showPg('add');
-}
-
-function saveTrip() {
-    const name = document.getElementById('i-name').value;
-    const legs = [];
-    document.querySelectorAll('.leg-row').forEach(row => {
-        legs.push({ f: row.querySelector('.l-f').value.toUpperCase(), t: row.querySelector('.l-t').value.toUpperCase(), d: row.querySelector('.l-d').value, n: row.querySelector('.l-n').value });
-    });
-    if(editingIdx > -1) trips[editingIdx] = { ...trips[editingIdx], name, legs };
-    else trips.push({ name, legs, exps: [] });
-    editingIdx = -1;
-    saveAndRender(); showPg('map');
 }
 
 function renderMap() {
     const cvs = document.getElementById('map-canvas'); const ctx = cvs.getContext('2d');
     const w = cvs.width = cvs.offsetWidth; const h = cvs.height = cvs.offsetHeight;
     ctx.clearRect(0,0,w,h);
-    const getX = lng => (lng - 100) / 50 * w; const getY = lat => h - (lat - 0) / 45 * h;
+    const getX = lng => (lng - 100) / 60 * w; const getY = lat => h - (lat - 0) / 50 * h;
     trips.forEach((t,ti)=>{
         ctx.strokeStyle = ti===0?'#f97316':'#3b82f6'; ctx.lineWidth=2;
         t.legs.forEach(l=>{
             const f=AIRPORTS[l.f], tt=AIRPORTS[l.t]; if(!f||!tt) return;
             ctx.beginPath(); ctx.setLineDash([5,5]); ctx.moveTo(getX(f.lng),getY(f.lat)); ctx.lineTo(getX(tt.lng),getY(tt.lat)); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle=ctx.strokeStyle; ctx.beginPath(); ctx.arc(getX(f.lng),getY(f.lat),3,0,7); ctx.fill();
         });
     });
 }
 
-function saveAndRender() { localStorage.setItem('flog_v11', JSON.stringify(trips)); renderAll(); }
-function showPg(p) { 
-    document.querySelectorAll('.page').forEach(e=>e.style.display='none'); 
-    document.getElementById('pg-'+p).style.display='block'; 
-    document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active'));
-    document.getElementById('btn-'+p).classList.add('active');
-    if(p==='map') renderAll(); 
-    if(p==='add' && editingIdx===-1) { document.getElementById('i-name').value=''; document.getElementById('leg-container').innerHTML=''; addLeg(); }
+function showSuggestions(input) {
+    const val = input.value.toUpperCase();
+    const sugBox = input.nextElementSibling;
+    if(!val) { sugBox.style.display='none'; return; }
+    const matches = Object.keys(AIRPORTS).filter(k => k.includes(val) || AIRPORTS[k].n.includes(val));
+    sugBox.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSug('${input.id}', '${m}')"><strong>${m}</strong> - ${AIRPORTS[m].n}</div>`).join('');
+    sugBox.style.display = matches.length ? 'block' : 'none';
 }
+
+function selectSug(id, code) { document.getElementById(id).value = code; document.getElementById(id).nextElementSibling.style.display='none'; }
+function editTrip(idx) { editingIdx = idx; const t = trips[idx]; document.getElementById('i-name').value = t.name; document.getElementById('leg-container').innerHTML = ''; t.legs.forEach(l => addLeg(l)); showPg('add'); }
+function saveTrip() {
+    const name = document.getElementById('i-name').value; const legs = [];
+    document.querySelectorAll('.leg-row').forEach(row => { legs.push({ f: row.querySelector('.l-f').value.toUpperCase(), t: row.querySelector('.l-t').value.toUpperCase(), d: row.querySelector('.l-d').value, n: row.querySelector('.l-n').value }); });
+    if(editingIdx > -1) trips[editingIdx] = { ...trips[editingIdx], name, legs }; else trips.push({ name, legs, exps: [] });
+    editingIdx = -1; saveAndRender(); showPg('map');
+}
+function saveAndRender() { localStorage.setItem('flog_v12', JSON.stringify(trips)); renderAll(); }
+function showPg(p) { document.querySelectorAll('.page').forEach(e=>e.style.display='none'); document.getElementById('pg-'+p).style.display='block'; document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active')); document.getElementById('btn-'+p).classList.add('active'); if(p==='map') renderAll(); if(p==='add' && editingIdx===-1) { document.getElementById('i-name').value=''; document.getElementById('leg-container').innerHTML=''; addLeg(); } }
 function closeModal() { document.getElementById('modal').style.display='none'; }
 function delTrip(idx) { if(confirm('確定刪除？')){trips.splice(idx,1); saveAndRender();} }
-
 window.onload = () => { renderAll(); };
 </script>
 </body>
