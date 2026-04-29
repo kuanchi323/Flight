@@ -3,118 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>FlightLog Pro v11.0 - Full Function</title>
+<title>FlightLog Pro v11.0 - Full Restore</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#07090e;--surface:#161b22;--border:rgba(255,255,255,0.12);--text:#dce4f0;--muted:#8b949e;--accent:#f97316;--accent2:#3b82f6}
+:root{--bg:#07090e;--surface:#161b22;--border:rgba(255,255,255,0.1);--text:#dce4f0;--muted:#8b949e;--accent:#f97316;--accent2:#3b82f6}
 body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-
-/* Header & Navigation */
 #hdr{padding:calc(44px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-#nav{display:flex;border-top:1px solid var(--border);background:rgba(7,9,14,0.9);padding-bottom:env(safe-area-inset-bottom);position:fixed;bottom:0;width:100%;z-index:100}
-.ntab{flex:1;padding:16px 0;background:none;border:none;color:var(--muted);text-align:center;font-size:11px}
-.ntab.active{color:var(--accent);font-weight:700}
-
-/* Map Section */
-#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:240px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
-#map-canvas{width:100%;height:100%;display:block}
-
-/* Content Area */
 #content{flex:1;overflow-y:auto;padding-bottom:100px}
-.card{background:var(--surface);border-radius:20px;padding:18px;margin:12px;border:1px solid var(--border);position:relative;transition:0.2s}
-.card:active{transform:scale(0.98)}
-.tag{font-size:10px;padding:2px 8px;border-radius:6px;background:var(--accent);color:white;font-weight:700;text-transform:uppercase}
 
-/* Form Styling */
-.leg-row{background:rgba(255,255,255,0.03);padding:15px;border-radius:16px;margin-bottom:12px;border:1px solid var(--border)}
-.input-group{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
-.search-container{position:relative}
-input{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:12px;color:white;padding:14px;width:100%;outline:none;font-size:15px}
-input:focus{border-color:var(--accent2)}
-.suggestions{position:absolute;top:52px;left:0;width:100%;background:#1c2128;border-radius:12px;z-index:1000;display:none;max-height:160px;overflow-y:auto;border:1px solid var(--accent2);box-shadow:0 10px 25px rgba(0,0,0,0.5)}
-.suggestion-item{padding:12px;border-bottom:1px solid var(--border);font-size:13px}
+/* 問題 1: 地圖背景修復 */
+#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:200px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+#map-img{width:100%;height:100%;object-fit:cover;opacity:0.6}
+#map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:5}
 
-/* Modal */
+.card{background:var(--surface);border-radius:18px;padding:16px;margin:12px;border:1px solid var(--border);position:relative}
+.tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--accent);color:white;font-weight:700}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:2000;display:none;flex-direction:column;padding:calc(40px + env(safe-area-inset-top)) 20px}
 .modal-content{flex:1;overflow-y:auto}
-.btn-orange{background:var(--accent);color:white;border:none;border-radius:14px;padding:16px;width:100%;font-weight:700;font-size:16px;margin-top:10px}
-.flight-item{background:rgba(255,255,255,0.05);padding:14px;border-radius:14px;margin-bottom:10px;border-left:4px solid var(--accent2)}
-.exp-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);font-size:14px}
+
+/* 問題 4: 輸入框佈局優化 (不重疊) */
+.search-container{position:relative;width:100%}
+input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:12px;color:white;padding:14px;width:100%;margin-bottom:10px;outline:none;font-size:15px}
+.suggestions{position:absolute;top:50px;left:0;width:100%;background:#1c2128;border-radius:12px;z-index:100;display:none;max-height:180px;overflow-y:auto;border:1px solid var(--accent2)}
+.suggestion-item{padding:12px;border-bottom:1px solid var(--border);font-size:14px}
+
+.btn-orange{background:var(--accent);color:white;border:none;border-radius:12px;padding:16px;width:100%;font-weight:700;margin-top:10px}
+.flight-item{background:rgba(255,255,255,0.05);padding:12px;border-radius:12px;margin-bottom:10px;border-left:4px solid var(--accent2)}
+.exp-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
+#nav{display:flex;border-top:1px solid var(--border);background:rgba(7,9,14,0.95);padding-bottom:env(safe-area-inset-bottom);position:fixed;bottom:0;width:100%;z-index:1000}
+.ntab{flex:1;padding:16px 0;background:none;border:none;color:var(--muted);text-align:center;font-size:11px}
+.ntab.active{color:var(--accent)}
 </style>
 </head>
 <body>
 
 <div id="hdr">
-    <div style="color:var(--accent);font-weight:700;letter-spacing:1px">● FLIGHT LOG PRO</div>
-    <div style="font-size:11px;color:var(--muted);border:1px solid var(--border);padding:6px 12px;border-radius:20px" onclick="location.reload()">重新整理</div>
+    <div style="color:var(--accent);font-weight:700;letter-spacing:2px">● FLIGHT LOG PRO</div>
+    <div style="font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:20px">已同步</div>
 </div>
 
 <div id="content">
   <div id="pg-map" class="page">
-    <div id="map-wrap"><canvas id="map-canvas"></canvas></div>
+    <div id="map-wrap">
+        <img id="map-img" src="https://maps.googleapis.com/maps/api/staticmap?center=25,121&zoom=3&size=600x300&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:geometry|color:0x212121&style=feature:water|color:0x000000&key=" alt="地圖背景">
+        <canvas id="map-canvas"></canvas>
+    </div>
     <div id="trips-list"></div>
   </div>
-
+  
   <div id="pg-add" class="page" style="display:none;padding:20px">
-    <h3 style="margin-bottom:15px">✈ 新增旅程</h3>
-    <input type="text" id="i-name" placeholder="行程名稱 (例如: 2024 大阪首爾)" style="margin-bottom:15px">
+    <h3 style="margin-bottom:15px">新增/修改行程</h3>
+    <input type="text" id="i-name" placeholder="行程名稱 (例如: 2024 大阪首爾)">
     <div id="leg-container"></div>
-    <button onclick="addLeg()" style="width:100%;padding:14px;margin-bottom:15px;background:none;border:1px dashed var(--muted);color:var(--muted);border-radius:12px;font-size:14px">＋ 新增航段</button>
-    <button class="btn-orange" onclick="saveTrip()">儲存行程並開啟 ✈</button>
+    <button onclick="addLeg()" style="width:100%;padding:12px;margin-bottom:15px;background:none;border:1px dashed var(--muted);color:var(--muted);border-radius:12px">＋ 新增航段</button>
+    <button class="btn-orange" onclick="saveTrip()">儲存行程 ✈</button>
   </div>
 </div>
 
 <div id="modal" class="modal">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
-      <span style="font-size:12px;color:var(--muted)">行程明細</span>
-      <span style="font-size:24px;color:var(--muted)" onclick="closeModal()">✕</span>
-  </div>
+  <span style="align-self:flex-end;font-size:28px;padding:10px;color:var(--muted)" onclick="closeModal()">✕</span>
   <div class="modal-content" id="modal-content"></div>
 </div>
 
 <div id="nav">
-  <button class="ntab active" id="btn-map" onclick="showPg('map')">🗺️ 地圖列表</button>
-  <button class="ntab" id="btn-add" onclick="showPg('add')">＋ 新增行程</button>
+  <button class="ntab active" id="btn-map" onclick="showPg('map')">🗺️ 行程</button>
+  <button class="ntab" id="btn-add" onclick="showPg('add')">＋ 新增</button>
 </div>
 
 <script>
-// 機場資料庫
 const AIRPORTS = {
     "KHH":{n:"高雄",lat:22.57,lng:120.34},"TPE":{n:"桃園",lat:25.07,lng:121.23},"ICN":{n:"首爾仁川",lat:37.46,lng:126.45},
     "KIX":{n:"大阪關西",lat:34.43,lng:135.24},"DPS":{n:"峇里島",lat:-8.74,lng:115.16},"MFM":{n:"澳門",lat:22.15,lng:113.59},
-    "DAD":{n:"峴港",lat:16.05,lng:108.20},"BKK":{n:"曼谷",lat:13.69,lng:100.75},"NRT":{n:"東京成田",lat:35.77,lng:140.39}
+    "DAD":{n:"峴港",lat:16.05,lng:108.20},"BKK":{n:"曼谷",lat:13.69,lng:100.75}
 };
 
-// 陸地輪廓數據 (簡化版)
-const LAND = [
-    [110,15,120,25,125,35,145,45,150,30,130,10,110,15], // 亞洲大略輪廓
-    [120,22,122,25,121,20,120,22] // 台灣
-];
-
-// 初始資料
-const initialData = [
+// 問題 3: 確保原始資料不丟失
+const recoveredData = [
     {
         name:"2024 大阪首爾", 
         legs:[
-            {f:"KHH",t:"KIX",d:"2024-12-25",n:"BR182",info:"07:05 - 10:35"},
-            {f:"KIX",t:"ICN",d:"2024-12-30",n:"KE728",info:"14:00 - 15:55"},
-            {f:"ICN",t:"KHH",d:"2025-01-03",n:"BR171",info:"20:45 - 23:10"}
+            {f:"KHH",t:"KIX",d:"2024-12-25",n:"BR182",info:"07:05-10:35"},
+            {f:"KIX",t:"ICN",d:"2024-12-30",n:"KE728",info:"14:00-15:55"},
+            {f:"ICN",t:"KHH",d:"2025-01-03",n:"BR171",info:"20:45-23:10"}
         ], 
         exps:[
-            {d:"機票+飯店",a:38138},{d:"阿倍野展望台",a:532},{d:"燒肉 298",a:534},{d:"利木津巴士",a:334},{d:"環球影城",a:3200}
+            {d:"機票+飯店 (大阪+首爾)",a:38138},{d:"阿倍野展望台",a:532},{d:"燒肉 298",a:534},{d:"利木津巴士",a:334}
         ]
     }
 ];
 
-let trips = JSON.parse(localStorage.getItem('flog_v11')) || initialData;
+let trips = JSON.parse(localStorage.getItem('flog_v11')) || recoveredData;
+let editingIdx = -1;
 
 function showSuggestions(input) {
     const val = input.value.toUpperCase();
     const sugBox = input.nextElementSibling;
     if(!val) { sugBox.style.display='none'; return; }
     const matches = Object.keys(AIRPORTS).filter(k => k.includes(val) || AIRPORTS[k].n.includes(val));
-    sugBox.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSug('${input.id}', '${m}')"><strong>${m}</strong> ${AIRPORTS[m].n}</div>`).join('');
+    sugBox.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSug('${input.id}', '${m}')"><strong>${m}</strong> - ${AIRPORTS[m].n}</div>`).join('');
     sugBox.style.display = matches.length ? 'block' : 'none';
 }
 
@@ -123,48 +110,118 @@ function selectSug(id, code) { document.getElementById(id).value = code; documen
 function renderAll() {
     trips.sort((a,b) => new Date(b.legs[0].d) - new Date(a.legs[0].d));
     document.getElementById('trips-list').innerHTML = trips.map((t, idx) => `
-        <div class="card" onclick="openModal(${idx})">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-                <span class="tag">Trip</span>
-                <div style="font-size:12px;color:var(--muted)">
-                    <span onclick="event.stopPropagation();editTrip(${idx})" style="margin-right:15px">修改</span>
-                    <span onclick="event.stopPropagation();delTrip(${idx})">刪除</span>
+        <div class="card">
+            <div style="display:flex;justify-content:space-between">
+                <span class="tag">TRIP</span>
+                <div>
+                    <span onclick="editTrip(${idx})" style="color:var(--accent2);font-size:12px;margin-right:15px">修改</span>
+                    <span onclick="delTrip(${idx})" style="color:var(--muted);font-size:12px">刪除</span>
                 </div>
             </div>
-            <h3 style="margin:12px 0;font-size:18px">📍 ${t.name}</h3>
-            ${t.legs.map(l=>`<div style="font-size:13px;color:var(--muted);margin-bottom:4px">✈ ${l.f} → ${l.t} <span style="float:right">${l.n}</span></div>`).join('')}
-            <div style="margin-top:12px;color:var(--accent);font-weight:700;border-top:1px solid var(--border);padding-top:12px;display:flex;justify-content:space-between">
-                <span>總開支</span><span>TWD ${t.exps.reduce((s,e)=>s+Number(e.a),0).toLocaleString()}</span>
+            <div onclick="openModal(${idx})">
+                <h3 style="margin:10px 0">📍 ${t.name}</h3>
+                ${t.legs.map(l=>`<div style="font-size:12px;color:var(--muted)">✈ ${l.f} → ${l.t} <span style="float:right">${l.n}</span></div>`).join('')}
+                <div style="margin-top:10px;color:var(--accent);font-weight:600;border-top:1px solid var(--border);padding-top:10px">💰 TWD ${t.exps.reduce((s,e)=>s+Number(e.a),0).toLocaleString()}</div>
             </div>
         </div>
     `).join('');
     setTimeout(renderMap, 100);
 }
 
+// 問題 2: 收支輸入與修改功能
+function openModal(idx) {
+    const t = trips[idx];
+    document.getElementById('modal-content').innerHTML = `
+        <h2 style="margin-bottom:20px">📍 ${t.name}</h2>
+        ${t.legs.map(l=>`<div class="flight-item"><strong>${l.f} ➔ ${l.t}</strong> (${l.n})<div style="font-size:12px;color:var(--muted);margin-top:4px">${l.d} | ${l.info || ''}</div></div>`).join('')}
+        <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:15px;margin-top:20px">
+            <p style="font-size:12px;color:var(--muted);margin-bottom:10px">收支明細</p>
+            <div id="exp-list">${t.exps.map((e,ei)=>`<div class="exp-item"><span>${e.d}</span><span><strong>$${Number(e.a).toLocaleString()}</strong> <span onclick="delExp(${idx},${ei})" style="margin-left:10px;color:var(--muted)">✕</span></span></div>`).join('')}</div>
+            <div style="margin-top:15px">
+                <input type="text" id="new-exp-d" placeholder="項目 (如: 晚餐)">
+                <input type="number" id="new-exp-a" placeholder="金額">
+                <button class="btn-orange" style="background:var(--accent2);padding:10px" onclick="addExp(${idx})">新增支出</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('modal').style.display = 'flex';
+}
+
+function addExp(idx) {
+    const d = document.getElementById('new-exp-d').value;
+    const a = document.getElementById('new-exp-a').value;
+    if(!d || !a) return;
+    trips[idx].exps.push({d, a});
+    saveAndRender(); openModal(idx);
+}
+
+function delExp(tIdx, eIdx) { trips[tIdx].exps.splice(eIdx,1); saveAndRender(); openModal(tIdx); }
+
+// 問題 4: 新增行程的佈局排版 (解決重疊)
+function addLeg(data = {f:'', t:'', d:'', n:''}) {
+    const id = Date.now() + Math.random();
+    const d = document.createElement('div'); d.className='leg-row'; d.style.marginBottom='20px'; d.style.borderBottom='1px solid var(--border)'; d.style.paddingBottom='10px';
+    d.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="search-container"><input type="text" id="f-${id}" class="l-f" placeholder="從" value="${data.f}" oninput="showSuggestions(this)"><div class="suggestions"></div></div>
+            <div class="search-container"><input type="text" id="t-${id}" class="l-t" placeholder="到" value="${data.t}" oninput="showSuggestions(this)"><div class="suggestions"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:10px;margin-top:5px">
+            <div style="display:flex;flex-direction:column"><label style="font-size:10px;color:var(--muted)">日期</label><input type="date" class="l-d" value="${data.d}"></div>
+            <div style="display:flex;flex-direction:column"><label style="font-size:10px;color:var(--muted)">班號</label><input type="text" class="l-n" placeholder="班號" value="${data.n}"></div>
+        </div>
+    `;
+    document.getElementById('leg-container').appendChild(d);
+}
+
+function editTrip(idx) {
+    editingIdx = idx;
+    const t = trips[idx];
+    document.getElementById('i-name').value = t.name;
+    document.getElementById('leg-container').innerHTML = '';
+    t.legs.forEach(l => addLeg(l));
+    showPg('add');
+}
+
+function saveTrip() {
+    const name = document.getElementById('i-name').value;
+    const legs = [];
+    document.querySelectorAll('.leg-row').forEach(row => {
+        legs.push({ f: row.querySelector('.l-f').value.toUpperCase(), t: row.querySelector('.l-t').value.toUpperCase(), d: row.querySelector('.l-d').value, n: row.querySelector('.l-n').value });
+    });
+    if(editingIdx > -1) trips[editingIdx] = { ...trips[editingIdx], name, legs };
+    else trips.push({ name, legs, exps: [] });
+    editingIdx = -1;
+    saveAndRender(); showPg('map');
+}
+
 function renderMap() {
     const cvs = document.getElementById('map-canvas'); const ctx = cvs.getContext('2d');
-    const w = cvs.width = cvs.offsetWidth * 2; const h = cvs.height = cvs.offsetHeight * 2;
-    ctx.scale(2, 2); // 高解析度
-    const dw = w/2, dh = h/2;
-    ctx.clearRect(0,0,dw,dh);
-    
-    const view = { minLng: 95, maxLng: 155, minLat: -10, maxLat: 50 };
-    const getX = lng => (lng - view.minLng) / (view.maxLng - view.minLng) * dw;
-    const getY = lat => dh - (lat - view.minLat) / (view.maxLat - view.minLat) * dh;
-
-    // 畫陸地背景
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    LAND.forEach(path => {
-        ctx.beginPath();
-        for(let i=0; i<path.length; i+=2) {
-            const x = getX(path[i]), y = getY(path[i+1]);
-            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-        }
-        ctx.fill();
-    });
-
-    // 畫航線
+    const w = cvs.width = cvs.offsetWidth; const h = cvs.height = cvs.offsetHeight;
+    ctx.clearRect(0,0,w,h);
+    const getX = lng => (lng - 100) / 50 * w; const getY = lat => h - (lat - 0) / 45 * h;
     trips.forEach((t,ti)=>{
-        const color = ti===0 ? '#f97316' : '#3b82f6';
+        ctx.strokeStyle = ti===0?'#f97316':'#3b82f6'; ctx.lineWidth=2;
         t.legs.forEach(l=>{
-            const f=AIRPORTS[l.f], tt=AIRPORTS[l.t]; if(!
+            const f=AIRPORTS[l.f], tt=AIRPORTS[l.t]; if(!f||!tt) return;
+            ctx.beginPath(); ctx.setLineDash([5,5]); ctx.moveTo(getX(f.lng),getY(f.lat)); ctx.lineTo(getX(tt.lng),getY(tt.lat)); ctx.stroke();
+        });
+    });
+}
+
+function saveAndRender() { localStorage.setItem('flog_v11', JSON.stringify(trips)); renderAll(); }
+function showPg(p) { 
+    document.querySelectorAll('.page').forEach(e=>e.style.display='none'); 
+    document.getElementById('pg-'+p).style.display='block'; 
+    document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active'));
+    document.getElementById('btn-'+p).classList.add('active');
+    if(p==='map') renderAll(); 
+    if(p==='add' && editingIdx===-1) { document.getElementById('i-name').value=''; document.getElementById('leg-container').innerHTML=''; addLeg(); }
+}
+function closeModal() { document.getElementById('modal').style.display='none'; }
+function delTrip(idx) { if(confirm('確定刪除？')){trips.splice(idx,1); saveAndRender();} }
+
+window.onload = () => { renderAll(); };
+</script>
+</body>
+</html>
