@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>FlightLog Pro v13.0 - Full Data Integrated</title>
+<title>FlightLog Pro v13.5 - Backup Restored</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -11,43 +11,35 @@
 body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 #hdr{padding:calc(44px + env(safe-area-inset-top)) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 #content{flex:1;overflow-y:auto;padding-bottom:100px}
-
-/* 地圖顯示優化 */
-#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:240px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+#map-wrap{position:relative;margin:16px;border-radius:24px;overflow:hidden;border:1px solid var(--border);background:#0d1117;height:240px}
 #map-svg{position:absolute;top:0;left:0;width:100%;height:100%;fill:#24292e;opacity:0.6}
 #map-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:5}
-
 .card{background:var(--surface);border-radius:18px;padding:16px;margin:12px;border:1px solid var(--border);position:relative}
 .tag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--accent);color:white;font-weight:700}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:2000;display:none;flex-direction:column;padding:calc(40px + env(safe-area-inset-top)) 20px}
 .modal-content{flex:1;overflow-y:auto}
-
-.search-container{position:relative;width:100%}
 input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:12px;color:white;padding:14px;width:100%;margin-bottom:10px;outline:none;font-size:15px}
-.suggestions{position:absolute;top:50px;left:0;width:100%;background:#1c2128;border-radius:12px;z-index:100;display:none;max-height:180px;overflow-y:auto;border:1px solid var(--accent2)}
-.suggestion-item{padding:12px;border-bottom:1px solid var(--border);font-size:14px}
-
 .btn-orange{background:var(--accent);color:white;border:none;border-radius:12px;padding:16px;width:100%;font-weight:700;margin-top:10px}
-.flight-item{background:rgba(255,255,255,0.05);padding:12px;border-radius:12px;margin-bottom:10px;border-left:4px solid var(--accent2)}
 .exp-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
 #nav{display:flex;border-top:1px solid var(--border);background:rgba(7,9,14,0.95);padding-bottom:env(safe-area-inset-bottom);position:fixed;bottom:0;width:100%;z-index:1000}
 .ntab{flex:1;padding:16px 0;background:none;border:none;color:var(--muted);text-align:center;font-size:11px}
 .ntab.active{color:var(--accent)}
+.suggestions{position:absolute;top:50px;left:0;width:100%;background:#1c2128;border-radius:12px;z-index:100;display:none;max-height:180px;overflow-y:auto;border:1px solid var(--accent2)}
+.suggestion-item{padding:12px;border-bottom:1px solid var(--border);font-size:14px}
 </style>
 </head>
 <body>
 
 <div id="hdr">
     <div style="color:var(--accent);font-weight:700;letter-spacing:2px">● FLIGHT LOG PRO</div>
-    <div style="font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:20px">v13.0 Full Stable</div>
+    <div id="backup-btn" style="font-size:10px;color:var(--muted);border:1px solid var(--border);padding:4px 12px;border-radius:20px" onclick="exportData()">備份數據</div>
 </div>
 
 <div id="content">
   <div id="pg-map" class="page">
     <div id="map-wrap">
-        <svg id="map-svg" viewBox="400 0 400 300" preserveAspectRatio="xMidYMid slice">
-            <path d="M480,80 L520,70 L550,85 L600,60 L650,80 L680,120 L660,180 L600,220 L550,210 L500,160 Z" />
-            <path d="M575,135 Q585,130 595,145 T615,155" fill="none" stroke="rgba(255,255,255,0.1)" />
+        <svg id="map-svg" viewBox="400 50 400 300" preserveAspectRatio="xMidYMid slice">
+            <path d="M480,100 L520,90 L550,105 L600,80 L650,100 L680,140 L660,200 L600,240 L550,230 L500,180 Z" />
         </svg>
         <canvas id="map-canvas"></canvas>
     </div>
@@ -55,7 +47,7 @@ input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-ra
   </div>
   
   <div id="pg-add" class="page" style="display:none;padding:20px">
-    <input type="text" id="i-name" placeholder="行程名稱 (例如: 2024 大阪首爾)">
+    <input type="text" id="i-name" placeholder="行程名稱">
     <div id="leg-container"></div>
     <button onclick="addLeg()" style="width:100%;padding:12px;margin-bottom:15px;background:none;border:1px dashed var(--muted);color:var(--muted);border-radius:12px">＋ 新增航段</button>
     <button class="btn-orange" onclick="saveTrip()">儲存行程 ✈</button>
@@ -76,33 +68,17 @@ input{background:rgba(255,255,255,0.07);border:1px solid var(--border);border-ra
 const AIRPORTS = {
     "KHH":{n:"高雄",lat:22.57,lng:120.34},"TPE":{n:"桃園",lat:25.07,lng:121.23},"ICN":{n:"首爾",lat:37.46,lng:126.45},
     "KIX":{n:"大阪",lat:34.43,lng:135.24},"DPS":{n:"峇里島",lat:-8.74,lng:115.16},"MFM":{n:"澳門",lat:22.15,lng:113.59},
-    "DAD":{n:"峴港",lat:16.05,lng:108.20},"SGN":{n:"胡志明",lat:10.82,lng:106.66}
+    "DAD":{n:"峴港",lat:16.05,lng:108.20},"PQC":{n:"富國島",lat:10.16,lng:103.96}
 };
 
-// 整合所有截圖中的行程數據
-const defaultTrips = [
-    {
-        name:"2024 大阪首爾", 
-        legs:[
-            {f:"KHH",t:"KIX",d:"2024-12-25",n:"BR182"},
-            {f:"KIX",t:"ICN",d:"2024-12-30",n:"KE728"},
-            {f:"ICN",t:"KHH",d:"2025-01-03",n:"BR171"}
-        ], 
-        exps:[{d:"機票飯店",a:38138},{d:"阿倍野",a:532},{d:"燒肉298",a:534}]
-    },
-    {
-        name:"2025 澳門", 
-        legs:[{f:"KHH",t:"MFM",d:"2025-10-25",n:"BR2913"}], 
-        exps:[{d:"水舞間",a:6776},{d:"自助山",a:6794}]
-    },
-    {
-        name:"2025 峴港", 
-        legs:[{f:"KHH",t:"DAD",d:"2025-06-05",n:"JX851"}], 
-        exps:[{d:"峴港住宿",a:5200}]
-    }
+const defaultData = [
+    { name:"2024 大阪首爾", legs:[{f:"KHH",t:"KIX",d:"2024-12-25",n:"BR182"},{f:"KIX",t:"ICN",d:"2024-12-30",n:"KE728"},{f:"ICN",t:"KHH",d:"2025-01-03",n:"BR171"}], exps:[{d:"機票飯店",a:38138},{d:"阿倍野",a:532}] },
+    { name:"2025 澳門", legs:[{f:"KHH",t:"MFM",d:"2025-10-25",n:"BR2913"}], exps:[{d:"水舞間",a:6776},{d:"自助山",a:6794}] },
+    { name:"2025 峴港", legs:[{f:"KHH",t:"DAD",d:"2025-06-05",n:"JX851"}], exps:[{d:"住宿",a:5200}] },
+    { name:"2025 富國島", legs:[{f:"KHH",t:"PQC",d:"2025-09-15",n:"VJ829"}], exps:[] }
 ];
 
-let trips = JSON.parse(localStorage.getItem('flog_v13')) || defaultTrips;
+let trips = JSON.parse(localStorage.getItem('flog_v135')) || defaultData;
 let editingIdx = -1;
 
 function renderAll() {
@@ -126,7 +102,7 @@ function openModal(idx) {
     const t = trips[idx];
     document.getElementById('modal-content').innerHTML = `
         <h2 style="margin-bottom:20px">📍 ${t.name}</h2>
-        ${t.legs.map(l=>`<div class="flight-item"><strong>${l.f} ➔ ${l.t}</strong> (${l.n})<div style="font-size:12px;color:var(--muted);margin-top:4px">${l.d}</div></div>`).join('')}
+        ${t.legs.map(l=>`<div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:12px;margin-bottom:10px;border-left:4px solid var(--accent2)"><strong>${l.f} ➔ ${l.t}</strong> (${l.n})<div style="font-size:12px;color:var(--muted);margin-top:4px">${l.d}</div></div>`).join('')}
         <div style="background:rgba(255,255,255,0.03);padding:15px;border-radius:15px;margin-top:20px">
             <p style="font-size:12px;color:var(--muted);margin-bottom:10px">收支明細</p>
             <div id="exp-list">${t.exps.map((e,ei)=>`<div class="exp-item"><span>${e.d}</span><span><strong>$${Number(e.a).toLocaleString()}</strong> <span onclick="delExp(${idx},${ei})" style="margin-left:10px;color:var(--muted)">✕</span></span></div>`).join('')}</div>
@@ -140,29 +116,10 @@ function openModal(idx) {
     document.getElementById('modal').style.display = 'flex';
 }
 
-function addExp(idx) {
-    const d = document.getElementById('new-exp-d').value;
-    const a = document.getElementById('new-exp-a').value;
-    if(!d || !a) return;
-    trips[idx].exps.push({d, a});
-    saveAndRender(); openModal(idx);
-}
-
-function delExp(tIdx, eIdx) { trips[tIdx].exps.splice(eIdx,1); saveAndRender(); openModal(tIdx); }
-
 function addLeg(data = {f:'', t:'', d:'', n:''}) {
     const id = Date.now() + Math.random();
     const d = document.createElement('div'); d.className='leg-row'; d.style.marginBottom='20px'; d.style.paddingBottom='10px'; d.style.borderBottom='1px solid var(--border)';
-    d.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div class="search-container"><input type="text" id="f-${id}" class="l-f" placeholder="從" value="${data.f}" oninput="showSuggestions(this)"><div class="suggestions"></div></div>
-            <div class="search-container"><input type="text" id="t-${id}" class="l-t" placeholder="到" value="${data.t}" oninput="showSuggestions(this)"><div class="suggestions"></div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px">
-            <div><label style="font-size:10px;color:var(--muted)">日期</label><input type="date" class="l-d" value="${data.d}"></div>
-            <div><label style="font-size:10px;color:var(--muted)">班號</label><input type="text" class="l-n" placeholder="班號" value="${data.n}"></div>
-        </div>
-    `;
+    d.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="search-container"><input type="text" id="f-${id}" class="l-f" placeholder="從" value="${data.f}" oninput="showSuggestions(this)"><div class="suggestions"></div></div><div class="search-container"><input type="text" id="t-${id}" class="l-t" placeholder="到" value="${data.t}" oninput="showSuggestions(this)"><div class="suggestions"></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:5px"><div><label style="font-size:10px;color:var(--muted)">日期</label><input type="date" class="l-d" value="${data.d}"></div><div><label style="font-size:10px;color:var(--muted)">班號</label><input type="text" class="l-n" placeholder="班號" value="${data.n}"></div></div>`;
     document.getElementById('leg-container').appendChild(d);
 }
 
@@ -170,27 +127,28 @@ function renderMap() {
     const cvs = document.getElementById('map-canvas'); const ctx = cvs.getContext('2d');
     const w = cvs.width = cvs.offsetWidth; const h = cvs.height = cvs.offsetHeight;
     ctx.clearRect(0,0,w,h);
-    // 聚焦在東亞座標範圍
-    const getX = lng => (lng - 100) / 45 * w; 
-    const getY = lat => h - (lat - 5) / 40 * h;
-
+    const getX = lng => (lng - 100) / 45 * w; const getY = lat => h - (lat - 5) / 40 * h;
     trips.forEach((t,ti)=>{
         ctx.strokeStyle = ti===0?'#f97316':'#3b82f6'; ctx.lineWidth=2;
         t.legs.forEach(l=>{
             const f=AIRPORTS[l.f], tt=AIRPORTS[l.t]; if(!f||!tt) return;
-            ctx.beginPath(); ctx.setLineDash([5,5]); 
             const x1=getX(f.lng), y1=getY(f.lat), x2=getX(tt.lng), y2=getY(tt.lat);
-            ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-            ctx.setLineDash([]); ctx.fillStyle=ctx.strokeStyle;
-            ctx.beginPath(); ctx.arc(x1,y1,4,0,7); ctx.fill();
-            ctx.beginPath(); ctx.arc(x2,y2,4,0,7); ctx.fill();
+            ctx.beginPath(); ctx.setLineDash([5,5]); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle=ctx.strokeStyle; ctx.beginPath(); ctx.arc(x1,y1,4,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(x2,y2,4,0,7); ctx.fill();
         });
     });
 }
 
+function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(trips));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "flight_log_backup.json");
+    dlAnchorElem.click();
+}
+
 function showSuggestions(input) {
-    const val = input.value.toUpperCase();
-    const sugBox = input.nextElementSibling;
+    const val = input.value.toUpperCase(); const sugBox = input.nextElementSibling;
     if(!val) { sugBox.style.display='none'; return; }
     const matches = Object.keys(AIRPORTS).filter(k => k.includes(val) || AIRPORTS[k].n.includes(val));
     sugBox.innerHTML = matches.map(m => `<div class="suggestion-item" onclick="selectSug('${input.id}', '${m}')"><strong>${m}</strong> - ${AIRPORTS[m].n}</div>`).join('');
@@ -198,30 +156,19 @@ function showSuggestions(input) {
 }
 
 function selectSug(id, code) { document.getElementById(id).value = code; document.getElementById(id).nextElementSibling.style.display='none'; }
-
+function addExp(idx) { const d=document.getElementById('new-exp-d').value, a=document.getElementById('new-exp-a').value; if(!d||!a)return; trips[idx].exps.push({d,a}); saveAndRender(); openModal(idx); }
+function delExp(tIdx, eIdx) { trips[tIdx].exps.splice(eIdx,1); saveAndRender(); openModal(tIdx); }
 function editTrip(idx) { editingIdx = idx; const t = trips[idx]; document.getElementById('i-name').value = t.name; document.getElementById('leg-container').innerHTML = ''; t.legs.forEach(l => addLeg(l)); showPg('add'); }
-
 function saveTrip() {
     const name = document.getElementById('i-name').value; const legs = [];
     document.querySelectorAll('.leg-row').forEach(row => { legs.push({ f: row.querySelector('.l-f').value.toUpperCase(), t: row.querySelector('.l-t').value.toUpperCase(), d: row.querySelector('.l-d').value, n: row.querySelector('.l-n').value }); });
     if(editingIdx > -1) trips[editingIdx] = { ...trips[editingIdx], name, legs }; else trips.push({ name, legs, exps: [] });
     editingIdx = -1; saveAndRender(); showPg('map');
 }
-
-function saveAndRender() { localStorage.setItem('flog_v13', JSON.stringify(trips)); renderAll(); }
-
-function showPg(p) { 
-    document.querySelectorAll('.page').forEach(e=>e.style.display='none'); 
-    document.getElementById('pg-'+p).style.display='block'; 
-    document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active')); 
-    document.getElementById('btn-'+p).classList.add('active'); 
-    if(p==='map') renderAll(); 
-    if(p==='add' && editingIdx===-1) { document.getElementById('i-name').value=''; document.getElementById('leg-container').innerHTML=''; addLeg(); } 
-}
-
+function saveAndRender() { localStorage.setItem('flog_v135', JSON.stringify(trips)); renderAll(); }
+function showPg(p) { document.querySelectorAll('.page').forEach(e=>e.style.display='none'); document.getElementById('pg-'+p).style.display='block'; document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('active')); document.getElementById('btn-'+p).classList.add('active'); if(p==='map') renderAll(); if(p==='add' && editingIdx===-1) { document.getElementById('i-name').value=''; document.getElementById('leg-container').innerHTML=''; addLeg(); } }
 function closeModal() { document.getElementById('modal').style.display='none'; }
 function delTrip(idx) { if(confirm('確定刪除？')){trips.splice(idx,1); saveAndRender();} }
-
 window.onload = () => { renderAll(); };
 </script>
 </body>
